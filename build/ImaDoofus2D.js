@@ -211,7 +211,7 @@
                     sum += fpsArray[i];
                     
                 }
-                fps = Math.round((sum/fpsArray.length)*100)/100
+                fps = Math.round((sum/fpsArray.length))
                 fpsArray = [];
             }
 
