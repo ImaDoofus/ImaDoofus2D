@@ -220,10 +220,11 @@
             width = Math.max(time.length*7.5,renderingCanvas.id.length*10)
             ctx.fillStyle = 'black'
             ctx.fillRect(4,4,width,60)
-            ctx.fillStyle = 'white'
+            ctx.fillStyle = '#ff9999'
             ctx.font = '12pt Arial';
             ctx.fillText(`${renderingCanvas.id}`,7,20);
             ctx.font = '10pt Arial'
+            ctx.fillStyle = 'white'
             ctx.fillText(`${time}`,9,40)
             ctx.fillText(`${fps} fps`,9,55)
         }
