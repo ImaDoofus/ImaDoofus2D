@@ -73,6 +73,26 @@
         toDraw.push(this)
     }
 
+    window.Text = function(t,x,y,f='16pt Arial',c='black') {
+        this.type = 'text'
+        this.x = x;
+        this.y = y;
+        this.rotation = 0;
+        this.color = c;
+        this.border = {};
+        this.content = t;
+        this.font = f
+        this.snap = () => {
+            let index = toDraw.indexOf(this)
+            if (index > -1) {
+                toDraw.splice(index,1)
+        
+            }
+        }
+        toDraw.push(this)
+    }
+
+
 
     window.Texture = function(url,w,h) {
 
@@ -185,6 +205,81 @@
                     ctx.restore()
                 }
 
+
+                if (item.type === 'text') {
+
+                    // console.log(textures[0])
+
+                    ctx.save()
+
+                    let drawX = item.x;
+                    let drawY = item.y;
+                    let translationX = 0;
+                    let translationY = 0;
+                    // console.log(item,drawX,drawY)
+                    
+                    ctx.font = item.font
+
+                    if (item.rotation !== 0) {
+                        // ctx.translate(renderingCanvas.width/2,renderingCanvas.height/2)
+                        // translationX += item.x+(item.width/2)
+                        // translationY += item.y+(item.height/2)
+                        // translationX = item.x+(ctx.measureText(item.content).width)/2
+                        metrics = ctx.measureText(item.content)
+                        let fontHeight = metrics.actualBoundingBoxAscent
+                        let fontWidth = ctx.measureText(item.content).width
+                        translationY += item.y+(fontHeight/2)
+                        translationX += item.x+(fontWidth/2)
+                        ctx.translate(translationX,translationY)
+                        ctx.rotate(item.rotation * ( Math.PI/180))
+                        drawX = -(fontWidth/2);
+                        drawY = -(fontHeight/2)+fontHeight;
+                        // drawX = 450
+                        // drawY = 250
+
+                    }
+                    if (typeof item.border.color !== 'undefined') {
+
+                        ctx.fillStyle = item.border.color;
+                        let borderWidth = item.border.width;
+                        ctx.fillRect(item.x-borderWidth,item.y-borderWidth,item.width+borderWidth*2,item.height+borderWidth*2);
+                    }
+                    if (typeof item.texture === 'undefined') {
+                        ctx.fillStyle = item.color;
+                        // ctx.fillRect(item.x,item.y,item.width,item.height);
+                    } else {
+                        let matrix = new DOMMatrix();
+                        pattern = item.texture;
+                        if (item.texture.constructor.name === 'CanvasPattern') {
+                            pattern.setTransform(matrix.translate(drawX,drawY));
+                            ctx.fillStyle = pattern
+                            // ctx.translate(item.x,item.y) rotate(item.rotation * (Math.PI / 180))
+                            // translationX += item.x;
+                            // translationY += item.y;
+                            // ctx.translate(translationX,translationY)
+
+                            // drawX = 0;
+                            // drawY = 0;
+                            // ctx.fillRect(0,0,item.width,item.height);
+                        }
+                        
+
+                    }
+                    // ctx.textAlign = 'center'
+                    // ctx.fillText(item.content,drawX,drawY)
+                    // ctx.fillRect(drawX,drawY,100,100)
+
+                    
+                    ctx.fillText(item.content,drawX,drawY)
+                    // ctx.fillRect(0,0,10,10)
+                    // ctx.fillStyle = 'green'
+                    // ctx.fillRect(drawX,drawY,15,10)
+                    // ctx.restore()
+                    // ctx.fillStyle = 'blue'
+                    // ctx.fillRect(400,200,10,15)
+                }
+
+
                 if (item.type === 'circle') {
                     if (typeof item.border.color !== 'undefined') {
                         ctx.fillStyle = item.border.color;
@@ -211,7 +306,7 @@
                     sum += fpsArray[i];
                     
                 }
-                fps = Math.round((sum/fpsArray.length))
+                fps = Math.round((sum/fpsArray.length)*100)/100
                 fpsArray = [];
             }
 
@@ -220,11 +315,10 @@
             width = Math.max(time.length*7.5,renderingCanvas.id.length*10)
             ctx.fillStyle = 'black'
             ctx.fillRect(4,4,width,60)
-            ctx.fillStyle = '#ff9999'
+            ctx.fillStyle = 'white'
             ctx.font = '12pt Arial';
             ctx.fillText(`${renderingCanvas.id}`,7,20);
             ctx.font = '10pt Arial'
-            ctx.fillStyle = 'white'
             ctx.fillText(`${time}`,9,40)
             ctx.fillText(`${fps} fps`,9,55)
         }
