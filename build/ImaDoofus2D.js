@@ -152,7 +152,7 @@
                     
                     // console.log(textures[0])
 
-                    // ctx.save()
+                    ctx.save()
 
                     let drawX = item.x;
                     let drawY = item.y;
@@ -202,7 +202,7 @@
 
                     }
                     ctx.fillRect(drawX,drawY,item.width,item.height)
-                    // ctx.restore()
+                    ctx.restore()
                 }
 
 
@@ -210,6 +210,7 @@
 
                     // console.log(textures[0])
                     ctx.beginPath()
+                    
                     ctx.save()
 
                     let drawX = item.x;
@@ -236,7 +237,6 @@
                         drawY = -(fontHeight/2)+fontHeight;
                         // drawX = 450
                         // drawY = 250
-
                     }
                     if (typeof item.border.color !== 'undefined') {
 
