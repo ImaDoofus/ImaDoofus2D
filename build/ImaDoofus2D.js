@@ -131,7 +131,7 @@
     window.requestAnimationFrame(gameLoop)
 
     function gameLoop(timeStamp) {
-
+        console.log(toDraw.length)
         secondsPassed = (timeStamp - oldTimeStamp) / 1000;
         oldTimeStamp = timeStamp;
 
@@ -152,7 +152,7 @@
                     
                     // console.log(textures[0])
 
-                    ctx.save()
+                    // ctx.save()
 
                     let drawX = item.x;
                     let drawY = item.y;
@@ -202,14 +202,14 @@
 
                     }
                     ctx.fillRect(drawX,drawY,item.width,item.height)
-                    ctx.restore()
+                    // ctx.restore()
                 }
 
 
                 if (item.type === 'text') {
 
                     // console.log(textures[0])
-
+                    ctx.beginPath()
                     ctx.save()
 
                     let drawX = item.x;
@@ -274,9 +274,10 @@
                     // ctx.fillRect(0,0,10,10)
                     // ctx.fillStyle = 'green'
                     // ctx.fillRect(drawX,drawY,15,10)
-                    // ctx.restore()
+                    ctx.restore()
                     // ctx.fillStyle = 'blue'
                     // ctx.fillRect(400,200,10,15)
+                    ctx.closePath()
                 }
 
 
