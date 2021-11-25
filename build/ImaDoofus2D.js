@@ -114,7 +114,7 @@
                 
                 image2.onload = function() {
                     texture = ctx.createPattern(image2, 'repeat');
-                    console.log(texture)
+                    // console.log(texture)
                     resolve(texture)
                 }
                 
@@ -131,7 +131,6 @@
     window.requestAnimationFrame(gameLoop)
 
     function gameLoop(timeStamp) {
-        console.log(toDraw.length)
         secondsPassed = (timeStamp - oldTimeStamp) / 1000;
         oldTimeStamp = timeStamp;
 
