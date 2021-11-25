@@ -28,8 +28,8 @@
         this.height = h;
         this.rotation = 0;
         this.color = c;
-        this.border = {};
-        this.snap = () => {
+        this.data = {}
+        this.remove = () => {
             let index = toDraw.indexOf(this)
             if (index > -1) {
                 toDraw.splice(index,1)
@@ -45,8 +45,9 @@
         this.y = y;
         this.radius = r;
         this.color = c;
-        this.border = {}
-        this.delete = () => {
+        this.rotation = 0;
+        this.data = {};
+        this.remove = () => {
             let index = toDraw.indexOf(this)
             if (index > -1) {
                 toDraw.splice(index,1)
@@ -62,8 +63,9 @@
         this.y = y;
         this.radius = r;
         this.color = c;
-        this.border = {}
-        this.delete = () => {
+        this.data = {};
+        this.rotation = 0;
+        this.remove = () => {
             let index = toDraw.indexOf(this)
             if (index > -1) {
                 toDraw.splice(index,1)
@@ -73,16 +75,17 @@
         toDraw.push(this)
     }
 
-    window.Text = function(t,x,y,f='16pt Arial',c='black') {
+    window.Text = function(t,x,y,s,f,c='black') {
         this.type = 'text'
         this.x = x;
         this.y = y;
         this.rotation = 0;
         this.color = c;
-        this.border = {};
+        this.data = {};
         this.content = t;
-        this.font = f
-        this.snap = () => {
+        this.font = f;
+        this.size = s;
+        this.remove = () => {
             let index = toDraw.indexOf(this)
             if (index > -1) {
                 toDraw.splice(index,1)
@@ -114,17 +117,13 @@
                 
                 image2.onload = function() {
                     texture = ctx.createPattern(image2, 'repeat');
-                    // console.log(texture)
                     resolve(texture)
                 }
                 
             }
             image.crossOrigin = 'Anonymous';
-            image.src = url
-    
+            image.src = url;
         })
-
-
     }
 
 
@@ -136,95 +135,76 @@
 
         if (typeof renderer !== 'undefined') {
             
-            ctx.fillStyle = renderer.backgroundColor
-            ctx.fillRect(0,0,renderingCanvas.width,renderingCanvas.height)
+            // Clear the canvas
+            ctx.fillStyle = renderer.backgroundColor;
+            ctx.fillRect(0,0,renderingCanvas.width,renderingCanvas.height);
 
-
-            // ctx.fillText(`${window.performance.memory.usedJSHeapSize/1000}kb`,7,70)
-            // console.log(window.performance.memory)
-            // console.log(toDraw)
             for (let i = 0; i < toDraw.length; i++) {
                 let item = toDraw[i]
-
+                ctx.save()
                 if (item.type === 'rect') {
-
-                    
-                    // console.log(textures[0])
-
-                    ctx.save()
+                    ctx.beginPath()
 
                     let drawX = item.x;
                     let drawY = item.y;
                     let translationX = 0;
                     let translationY = 0;
 
+                    // rotate the rectangle if a rotation is specified.
                     if (item.rotation !== 0) {
-                        // ctx.translate(renderingCanvas.width/2,renderingCanvas.height/2)
-                        translationX += item.x+(item.width/2)
-                        translationY += item.y+(item.height/2)
-                        //
-                        // 400,400,300,300
-                        //
+                        // set the origin of the context to be the center of the rectangle.
+                        translationX += item.x+(item.width/2);
+                        translationY += item.y+(item.height/2);
                         ctx.translate(translationX,translationY)
+
+                        // rotate the context to the rotation specified in degrees.
                         ctx.rotate(item.rotation * ( Math.PI/180))
+
+                        // set the rectangle to draw so the center of the rectangle is at the context origin.
                         drawX = -item.width/2;
                         drawY = -item.height/2;
-                        // drawX = -50
-                        // drawY = -100
-
                     }
-                    if (typeof item.border.color !== 'undefined') {
 
+                    // if there is a border then draw one.
+                    if (typeof item.border !== 'undefined') {
                         ctx.fillStyle = item.border.color;
-                        let borderWidth = item.border.width;
+                        let borderWidth = item.border.thickness;
                         ctx.fillRect(item.x-borderWidth,item.y-borderWidth,item.width+borderWidth*2,item.height+borderWidth*2);
                     }
+
+                    // if there is a texture then set the fillStyle to it, if not then use the color of the rectangle.
                     if (typeof item.texture === 'undefined') {
                         ctx.fillStyle = item.color;
-                        // ctx.fillRect(item.x,item.y,item.width,item.height);
                     } else {
                         let matrix = new DOMMatrix();
                         pattern = item.texture;
                         if (item.texture.constructor.name === 'CanvasPattern') {
+                            // move the patterns origin to be where the rectangle is going to be drawn.
                             pattern.setTransform(matrix.translate(drawX,drawY));
-                            ctx.fillStyle = pattern
-                            // ctx.translate(item.x,item.y) rotate(item.rotation * (Math.PI / 180))
-                            // translationX += item.x;
-                            // translationY += item.y;
-                            // ctx.translate(translationX,translationY)
-
-                            // drawX = 0;
-                            // drawY = 0;
-                            // ctx.fillRect(0,0,item.width,item.height);
+                            ctx.fillStyle = pattern;
                         }
-                        
-
                     }
-                    ctx.fillRect(drawX,drawY,item.width,item.height)
-                    ctx.restore()
+                    // finally draw the rectangle
+                    ctx.fillRect(drawX,drawY,item.width,item.height);
+
+                    // set the context origin back to normal.
+                    ctx.restore();
+                    
+                    ctx.closePath();
                 }
 
 
                 if (item.type === 'text') {
-
-                    // console.log(textures[0])
                     ctx.beginPath()
                     
-                    ctx.save()
-
                     let drawX = item.x;
                     let drawY = item.y;
                     let translationX = 0;
                     let translationY = 0;
-                    // console.log(item,drawX,drawY)
                     
-                    ctx.font = item.font
+                    ctx.font = `${item.size}pt ${item.font}`;
 
                     if (item.rotation !== 0) {
-                        // ctx.translate(renderingCanvas.width/2,renderingCanvas.height/2)
-                        // translationX += item.x+(item.width/2)
-                        // translationY += item.y+(item.height/2)
-                        // translationX = item.x+(ctx.measureText(item.content).width)/2
                         metrics = ctx.measureText(item.content)
                         let fontHeight = metrics.actualBoundingBoxAscent
                         let fontWidth = ctx.measureText(item.content).width
@@ -234,93 +214,110 @@
                         ctx.rotate(item.rotation * ( Math.PI/180))
                         drawX = -(fontWidth/2);
                         drawY = -(fontHeight/2)+fontHeight;
-                        // drawX = 450
-                        // drawY = 250
                     }
-                    if (typeof item.border.color !== 'undefined') {
 
-                        ctx.fillStyle = item.border.color;
-                        let borderWidth = item.border.width;
-                        ctx.fillRect(item.x-borderWidth,item.y-borderWidth,item.width+borderWidth*2,item.height+borderWidth*2);
+                    if (typeof item.border.color !== 'undefined') {
+                        ctx.strokeStyle = item.border.color;
+                        ctx.lineWidth = item.border.thickness;
+                        ctx.strokeText(item.content,drawX,drawY);
                     }
+
                     if (typeof item.texture === 'undefined') {
                         ctx.fillStyle = item.color;
-                        // ctx.fillRect(item.x,item.y,item.width,item.height);
                     } else {
                         let matrix = new DOMMatrix();
                         pattern = item.texture;
                         if (item.texture.constructor.name === 'CanvasPattern') {
                             pattern.setTransform(matrix.translate(drawX,drawY));
-                            ctx.fillStyle = pattern
-                            // ctx.translate(item.x,item.y) rotate(item.rotation * (Math.PI / 180))
-                            // translationX += item.x;
-                            // translationY += item.y;
-                            // ctx.translate(translationX,translationY)
-
-                            // drawX = 0;
-                            // drawY = 0;
-                            // ctx.fillRect(0,0,item.width,item.height);
+                            ctx.fillStyle = pattern;
                         }
-                        
-
                     }
-                    // ctx.textAlign = 'center'
-                    // ctx.fillText(item.content,drawX,drawY)
-                    // ctx.fillRect(drawX,drawY,100,100)
-
                     
-                    ctx.fillText(item.content,drawX,drawY)
-                    // ctx.fillRect(0,0,10,10)
-                    // ctx.fillStyle = 'green'
-                    // ctx.fillRect(drawX,drawY,15,10)
-                    ctx.restore()
-                    // ctx.fillStyle = 'blue'
-                    // ctx.fillRect(400,200,10,15)
-                    ctx.closePath()
-                }
+                    ctx.fillText(item.content,drawX,drawY);
+                    ctx.restore();
 
-
-                if (item.type === 'circle') {
-                    if (typeof item.border.color !== 'undefined') {
-                        ctx.fillStyle = item.border.color;
-                        let borderWidth = item.border.width;
-                        ctx.beginPath();
-                        ctx.arc(item.x,item.y,item.radius+borderWidth,0,Math.PI*2);
-                        ctx.fill();
-                        ctx.closePath();
-                    }
-                    ctx.fillStyle = item.color;
-                    ctx.beginPath();
-                    ctx.arc(item.x,item.y,item.radius,0,Math.PI*2);
-                    ctx.fill();
                     ctx.closePath();
                 }
 
-            }
+                if (item.type === 'circle') {
+                    ctx.beginPath()
 
-            fpsArray.push((1 / secondsPassed) || 60)
-            if (timeStamp-lastFpsUpdate > 500) {
-                lastFpsUpdate = timeStamp;
-                let sum = 0;
-                for (let i = 0; i < fpsArray.length; i++) {
-                    sum += fpsArray[i];
+                    let drawX = item.x;
+                    let drawY = item.y;
+                    let translationX = 0;
+                    let translationY = 0;
+
+                    // rotate the circle if a rotation is specified.
+                    if (item.rotation !== 0) {
+                        // set the origin of the context to be the center of the circle.
+                        translationX += item.x;
+                        translationY += item.y;
+                        ctx.translate(translationX,translationY)
+
+                        // rotate the context to the rotation specified in degrees.
+                        ctx.rotate(item.rotation * ( Math.PI/180))
+
+                        drawX = 0;
+                        drawY = 0;
+                    }
+
+                    // if there is a border then draw one.
+                    if (typeof item.border !== 'undefined') {
+                        ctx.fillStyle = item.border.color;
+                        let borderWidth = item.border.thickness;
+                        ctx.beginPath();
+                        ctx.arc(drawX,drawY,item.radius+borderWidth,0,Math.PI*2);
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                    // if there is a texture then set the fillStyle to it, if not then use the color of the circle.
+                    if (typeof item.texture === 'undefined') {
+                        ctx.fillStyle = item.color;
+                    } else {
+                        let matrix = new DOMMatrix();
+                        pattern = item.texture;
+                        if (item.texture.constructor.name === 'CanvasPattern') {
+                            // move the patterns origin to be where the circle is going to be drawn.
+                            pattern.setTransform(matrix.translate(drawX-item.radius,drawY-item.radius));
+                            ctx.fillStyle = pattern;
+                        }
+                    }
+                    // finally draw the circle
+                    ctx.beginPath();
+                    ctx.arc(drawX,drawY,item.radius,0,Math.PI*2);
+                    ctx.fill();
+                    ctx.closePath();
+
+                    // set the context origin back to normal.
+                    ctx.restore();
                     
+                    ctx.closePath();
                 }
-                fps = Math.round((sum/fpsArray.length)*100)/100
-                fpsArray = [];
             }
 
-
-            let time = new Date().toLocaleString();
-            width = Math.max(time.length*7.5,renderingCanvas.id.length*10)
-            ctx.fillStyle = 'black'
-            ctx.fillRect(4,4,width,60)
-            ctx.fillStyle = 'white'
-            ctx.font = '12pt Arial';
-            ctx.fillText(`${renderingCanvas.id}`,7,20);
-            ctx.font = '10pt Arial'
-            ctx.fillText(`${time}`,9,40)
-            ctx.fillText(`${fps} fps`,9,55)
+            if (renderer.debug === true) {
+                fpsArray.push((1 / secondsPassed) || 60)
+                if (timeStamp-lastFpsUpdate > 500) {
+                    lastFpsUpdate = timeStamp;
+                    let sum = 0;
+                    for (let i = 0; i < fpsArray.length; i++) {
+                        sum += fpsArray[i];
+                        
+                    }
+                    fps = Math.round((sum/fpsArray.length)*100)/100
+                    fpsArray = [];
+                }
+                let time = new Date().toLocaleString();
+                width = Math.max(time.length*7.5,renderingCanvas.id.length*10)
+                ctx.fillStyle = 'black'
+                ctx.fillRect(4,4,width,60)
+                ctx.fillStyle = 'white'
+                ctx.font = '12pt Arial';
+                ctx.fillText(`${renderingCanvas.id}`,8,22);
+                ctx.font = '10pt Arial'
+                ctx.fillText(`${time}`,9,40)
+                ctx.fillText(`${fps} fps`,9,55)    
+            }
         }
         window.requestAnimationFrame(gameLoop)
     }
