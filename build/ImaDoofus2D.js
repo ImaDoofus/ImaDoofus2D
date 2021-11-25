@@ -75,7 +75,7 @@
         toDraw.push(this)
     }
 
-    window.Text = function(t,x,y,s,f,c='black') {
+    window.Text = function(t,x,y,s=12,f='Arial',c='black') {
         this.type = 'text'
         this.x = x;
         this.y = y;
