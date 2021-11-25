@@ -216,7 +216,7 @@
                         drawY = -(fontHeight/2)+fontHeight;
                     }
 
-                    if (typeof item.border.color !== 'undefined') {
+                    if (typeof item.border !== 'undefined') {
                         ctx.strokeStyle = item.border.color;
                         ctx.lineWidth = item.border.thickness;
                         ctx.strokeText(item.content,drawX,drawY);
